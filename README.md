@@ -95,7 +95,7 @@ Query Parameters:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/gunishmatta/alle-task-manager-gunish.git
+git clone https://github.com/gunishmatta/alle-task-manager-gunish
 cd alle-task-manager-gunish
 ```
 
