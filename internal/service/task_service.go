@@ -7,19 +7,19 @@ import (
 	"alle-task-manager-gunish/internal/domain/model"
 	"alle-task-manager-gunish/internal/domain/repository"
 	"context"
-	"fmt"
+	"strings"
 	"time"
 )
 
 type TaskService struct {
-	repo             repository.TaskRepository
-	taskEventService *TaskEventService
+	repo           repository.TaskRepository
+	eventPublisher TaskEventPublisher
 }
 
-func NewTaskService(repo repository.TaskRepository, taskEventService *TaskEventService) *TaskService {
+func NewTaskService(repo repository.TaskRepository, eventPublisher TaskEventPublisher) *TaskService {
 	return &TaskService{
-		repo:             repo,
-		taskEventService: taskEventService,
+		repo:           repo,
+		eventPublisher: eventPublisher,
 	}
 }
 
@@ -37,8 +37,8 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 	if err := s.repo.Create(ctx, task); err != nil {
 		return nil, err
 	}
-	if err := s.taskEventService.PublishTaskCreated(task); err != nil {
-		_ = fmt.Errorf("error publishing task event: %v", err)
+	if err := s.eventPublisher.PublishTaskCreated(task); err != nil {
+		loggingtype.GetLogger().Error("error publishing task event:", "error", err)
 	}
 	return task, nil
 }
@@ -85,7 +85,7 @@ func (s *TaskService) UpdateTask(ctx context.Context, id string, input UpdateTas
 	if err := s.repo.Update(ctx, task); err != nil {
 		return nil, err
 	}
-	if err := s.taskEventService.PublishTaskUpdated(task); err != nil {
+	if err := s.eventPublisher.PublishTaskUpdated(task); err != nil {
 		loggingtype.GetLogger().Error("error publishing task event:", "error", err)
 	}
 	return task, nil
@@ -98,7 +98,7 @@ func (s *TaskService) DeleteTask(ctx context.Context, id string) error {
 func (s *TaskService) ListTasks(ctx context.Context, status string, page *pagination.Page) ([]*model.Task, *pagination.PageInfo, error) {
 	filter := make(map[string]interface{})
 	if status != "" {
-		filter["status"] = status
+		filter["status"] = strings.ToLower(status)
 	}
 
 	tasks, total, err := s.repo.List(ctx, filter, page)

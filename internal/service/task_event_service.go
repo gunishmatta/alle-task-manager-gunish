@@ -12,9 +12,16 @@ const (
 	TopicTaskEvents = "task-events"
 )
 
+type TaskEventPublisher interface {
+	PublishTaskCreated(task *model.Task) error
+	PublishTaskUpdated(task *model.Task) error
+}
+
 type TaskEventService struct {
 	producer *kafka.Producer
 }
+
+var _ TaskEventPublisher = (*TaskEventService)(nil)
 
 func NewTaskEventService(producer *kafka.Producer) *TaskEventService {
 	return &TaskEventService{

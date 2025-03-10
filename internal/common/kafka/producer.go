@@ -3,7 +3,6 @@ package kafka
 import (
 	loggingtype "alle-task-manager-gunish/internal/common/logging"
 	"encoding/json"
-	"fmt"
 	"github.com/IBM/sarama"
 )
 
@@ -33,7 +32,8 @@ func NewProducer(brokers []string) (*Producer, error) {
 func (p *Producer) PublishMessage(topic string, key string, value interface{}) error {
 	jsonValue, err := json.Marshal(value)
 	if err != nil {
-		return fmt.Errorf("failed to marshal message: %w", err)
+		loggingtype.GetLogger().Error("failed to marshal message: ", "error", err)
+		return err
 	}
 
 	msg := &sarama.ProducerMessage{
@@ -44,7 +44,8 @@ func (p *Producer) PublishMessage(topic string, key string, value interface{}) e
 
 	partition, offset, err := p.Producer.SendMessage(msg)
 	if err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
+		loggingtype.GetLogger().Error("failed to send message:", "error", err)
+		return err
 	}
 	loggingtype.GetLogger().Info("Message published", "topic", topic, "partition", partition, "offset", offset)
 	return nil
