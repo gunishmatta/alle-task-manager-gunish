@@ -155,6 +155,10 @@ Run the tests:
 └── go.sum              # Go module dependencies checksum
 ```
 
+task_service.go -> Service for Task Handling
+task_event_service -> Service for Task Event Publishing
+task_event_consumer_service-> Kafka Consumer
+
 Design Patterns Used:
 * Singleton pattern in logger.go
 
