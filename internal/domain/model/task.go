@@ -14,13 +14,13 @@ const (
 )
 
 type Task struct {
-	ID          string     `json:"id"`
-	Title       string     `json:"title"`
+	ID          string     `json:"id" gorm:"primaryKey"`
+	Title       string     `json:"title" gorm:"not null"`
 	Description string     `json:"description"`
-	Status      TaskStatus `json:"status"`
+	Status      TaskStatus `json:"status" gorm:"not null"`
 	DueDate     *time.Time `json:"due_date,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	CreatedAt   time.Time  `json:"created_at" gorm:"not null"`
+	UpdatedAt   time.Time  `json:"updated_at" gorm:"not null"`
 }
 
 func NewTask(title, description string) *Task {
@@ -33,4 +33,8 @@ func NewTask(title, description string) *Task {
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
+}
+
+func (Task) TableName() string {
+	return "tasks"
 }

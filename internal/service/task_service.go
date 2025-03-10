@@ -2,20 +2,24 @@ package service
 
 import (
 	"alle-task-manager-gunish/internal/common/errors"
+	loggingtype "alle-task-manager-gunish/internal/common/logging"
 	"alle-task-manager-gunish/internal/common/pagination"
 	"alle-task-manager-gunish/internal/domain/model"
 	"alle-task-manager-gunish/internal/domain/repository"
 	"context"
+	"fmt"
 	"time"
 )
 
 type TaskService struct {
-	repo repository.TaskRepository
+	repo             repository.TaskRepository
+	taskEventService *TaskEventService
 }
 
-func NewTaskService(repo repository.TaskRepository) *TaskService {
+func NewTaskService(repo repository.TaskRepository, taskEventService *TaskEventService) *TaskService {
 	return &TaskService{
-		repo: repo,
+		repo:             repo,
+		taskEventService: taskEventService,
 	}
 }
 
@@ -30,11 +34,12 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 	if input.DueDate != nil {
 		task.DueDate = input.DueDate
 	}
-
 	if err := s.repo.Create(ctx, task); err != nil {
 		return nil, err
 	}
-
+	if err := s.taskEventService.PublishTaskCreated(task); err != nil {
+		_ = fmt.Errorf("error publishing task event: %v", err)
+	}
 	return task, nil
 }
 
@@ -80,7 +85,9 @@ func (s *TaskService) UpdateTask(ctx context.Context, id string, input UpdateTas
 	if err := s.repo.Update(ctx, task); err != nil {
 		return nil, err
 	}
-
+	if err := s.taskEventService.PublishTaskUpdated(task); err != nil {
+		loggingtype.GetLogger().Error("error publishing task event:", "error", err)
+	}
 	return task, nil
 }
 

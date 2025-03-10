@@ -9,7 +9,8 @@ import (
 )
 
 // Recovery : To catch any panics that might occur during request handling.
-func Recovery(logger *loggingtype.Logger) gin.HandlerFunc {
+func Recovery() gin.HandlerFunc {
+	logger := loggingtype.GetLogger()
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
